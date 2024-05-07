@@ -29,9 +29,7 @@ from bokeh.models import DatetimeTickFormatter, CrosshairTool, HoverTool
 output_notebook()
 ```
 
-<!-- #region jp-MarkdownHeadingCollapsed=true -->
 #### code for making the dashboard
-<!-- #endregion -->
 
 ```python
 def make_dashboard():
@@ -97,13 +95,22 @@ make_dashboard()
 ```
 
 ```python
-!tail -n 100 /Users/gsteele/logs/resources_status.log
-```
-
-```python
 !tail -n 100 /Users/gsteele/logs/battery_status.log
 ```
 
 ```python
+# Code for parsing the resource status logfile and printing something useful out
 
+for e in c.split("=====\n")[-10:]:
+    l = e.split("\n")
+    print(l[0])
+    ls = l[1].split()
+    for ind in 2,3,9,10:
+        print(f"{ls[ind]:<12}", end="")
+    print()
+    for j in 2,3,4,5,6:
+        ls = l[j].split()
+        for ind in 2,3,9:
+            print(f"{ls[ind]:<12}", end="")
+        print("%s" % ls[10].split("/")[-1])
 ```
