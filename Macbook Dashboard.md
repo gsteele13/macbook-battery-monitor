@@ -23,7 +23,7 @@ import pandas as pd
 
 from bokeh.plotting import figure, show
 from bokeh.io import output_notebook
-from bokeh.layouts import row
+from bokeh.layouts import column, row
 from bokeh.models import DatetimeTickFormatter, CrosshairTool, HoverTool
 
 output_notebook()
@@ -33,7 +33,9 @@ output_notebook()
 
 ```python
 def make_dashboard():
-    p = figure(height=200, width=600, x_axis_type='datetime') 
+    h = 300
+    w = 600
+    p = figure(height=h, width=w, x_axis_type='datetime') 
     p.sizing_mode = "scale_width"
     fmt = "%m-%d\n%H:%M:%S"
     formatter = DatetimeTickFormatter(hours=fmt, days=fmt, months=fmt, years=fmt)
@@ -52,12 +54,10 @@ def make_dashboard():
     l = "Battery"
     p.line(x, y, legend_label=l)
     p.scatter(x, y, legend_label=l, size=5)
-    
     p.legend.location = 'bottom_left'
-    show(p)
 
-    p = figure(height=200, width=600, x_axis_type='datetime') 
-    p.sizing_mode = "scale_width"
+    p2 = figure(height=h, width=w, x_axis_type='datetime', x_range = p.x_range) 
+    p2.sizing_mode = "scale_width"
     fmt = "%m-%d\n%H:%M:%S"
     formatter = DatetimeTickFormatter(hours=fmt, days=fmt, months=fmt, years=fmt)
     p.xaxis.formatter= formatter
@@ -71,11 +71,35 @@ def make_dashboard():
     x = cpu_temp["Time"]
     y = cpu_temp["Temp (C)"]
     l = "Temp (C)"
-    p.line(x, y, legend_label=l, color=c)
-    p.scatter(x, y, legend_label=l, size=5, color=c)
+    p2.line(x, y, legend_label=l, color=c)
+    p2.scatter(x, y, legend_label=l, size=5, color=c)
+    p2.legend.location = 'bottom_left'
+    p2.xaxis.formatter= formatter
 
-    p.legend.location = 'bottom_left'
-    show(p)
+
+    c = column(p,p2)
+    for w in p, p2, c:
+        w.sizing_mode = "stretch_width"
+    target = show(c, notebook_handle=True)
+
+def show_resources(n1=-10, n2=-1):
+    # Code for parsing the resource status logfile and printing something useful out
+    with open("/Users/gsteele/logs/resources_status.log") as f:
+        c = f.read()
+
+    print("Records: %d" % len(c.split("=====\n")))
+    for e in c.split("=====\n")[n1:n2]:
+        l = e.split("\n")
+        print(l[0])
+        ls = l[1].split()
+        for ind in 2,3,9,10:
+            print(f"{ls[ind]:<12}", end="")
+        print()
+        for j in 2,3,4,5,6:
+            ls = l[j].split()
+            for ind in 2,3,9:
+                print(f"{ls[ind]:<12}", end="")
+            print("%s" % ls[10].split("/")[-1])
 ```
 
 ### The dashboard
@@ -84,7 +108,9 @@ def make_dashboard():
 make_dashboard()
 ```
 
-### The logfiles
+```python
+show_resources()
+```
 
 ```python
 !tail -n 20 /Users/gsteele/logs/battery_percent.dat
@@ -95,22 +121,5 @@ make_dashboard()
 ```
 
 ```python
-!tail -n 100 /Users/gsteele/logs/battery_status.log
-```
 
-```python
-# Code for parsing the resource status logfile and printing something useful out
-
-for e in c.split("=====\n")[-10:]:
-    l = e.split("\n")
-    print(l[0])
-    ls = l[1].split()
-    for ind in 2,3,9,10:
-        print(f"{ls[ind]:<12}", end="")
-    print()
-    for j in 2,3,4,5,6:
-        ls = l[j].split()
-        for ind in 2,3,9:
-            print(f"{ls[ind]:<12}", end="")
-        print("%s" % ls[10].split("/")[-1])
 ```
