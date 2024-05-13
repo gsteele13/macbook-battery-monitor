@@ -134,7 +134,8 @@ show_resources()
 
 ```python
 # how to get more invo on a specific log entry
-# show_resources(n1=1020,n2=1021,debug=True)
+# n = 1020 
+# show_resources(n1=n,n2=n+1,debug=True)
 ```
 
 ```python
