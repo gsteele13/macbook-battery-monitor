@@ -82,24 +82,44 @@ def make_dashboard():
         w.sizing_mode = "stretch_width"
     target = show(c, notebook_handle=True)
 
-def show_resources(n1=-10, n2=-1):
+def show_resources(n1=-10, n2=-1, debug = False):
     # Code for parsing the resource status logfile and printing something useful out
     with open("/Users/gsteele/logs/resources_status.log") as f:
-        c = f.read()
+        c = f.read() # file contents
 
+    all_entries = c.split("=====\n")
+    if n1 < 0:
+        n1 = len(all_entries) + n1
+    if n2 < 0:
+        n2 = len(all_entries) + n2
+        
     print("Records: %d" % len(c.split("=====\n")))
-    for e in c.split("=====\n")[n1:n2]:
+    for n in range(n1,n2): 
+        e = all_entries[n]
         l = e.split("\n")
-        print(l[0])
+        print(l[0], "%d" % n) # date, and index for easy referencing later
         ls = l[1].split()
+        # The header
         for ind in 2,3,9,10:
             print(f"{ls[ind]:<12}", end="")
         print()
+        # The top 5 processes
         for j in 2,3,4,5,6:
-            ls = l[j].split()
+            ls = l[j].split() # spiit on whitespace
             for ind in 2,3,9:
                 print(f"{ls[ind]:<12}", end="")
-            print("%s" % ls[10].split("/")[-1])
+            # The process name often contains full path (not useful)
+            # And often a huge number of arguments, which may also contain /
+            # So start by splitting on - and grab first element, dropping all args
+            cmd = l[j].split(" -")[0]
+            # Then split on whitespace, grabbing 10 and rest
+            cmd = " ".join(cmd.split()[10:])
+            # Then spit on / and grab last one
+            cmd = cmd.split("/")[-1]
+            # This should now be good enough
+            print("%s" % cmd)
+            if debug:
+                print(l[j])
 ```
 
 ### The dashboard
@@ -110,6 +130,11 @@ make_dashboard()
 
 ```python
 show_resources()
+```
+
+```python
+# how to get more invo on a specific log entry
+# show_resources(n1=1020,n2=1021,debug=True)
 ```
 
 ```python
