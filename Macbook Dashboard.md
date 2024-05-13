@@ -25,6 +25,7 @@ from bokeh.plotting import figure, show
 from bokeh.io import output_notebook
 from bokeh.layouts import column, row
 from bokeh.models import DatetimeTickFormatter, CrosshairTool, HoverTool
+from bokeh.models import BoxZoomTool, ResetTool
 
 output_notebook()
 ```
@@ -35,15 +36,15 @@ output_notebook()
 def make_dashboard():
     h = 300
     w = 600
-    p = figure(height=h, width=w, x_axis_type='datetime') 
-    p.sizing_mode = "scale_width"
-    fmt = "%m-%d\n%H:%M:%S"
-    formatter = DatetimeTickFormatter(hours=fmt, days=fmt, months=fmt, years=fmt)
-    p.xaxis.formatter= formatter
-    #p.add_tools(CrosshairTool())
 
-    p.toolbar.active_drag = None
-    p.toolbar.active_scroll = "auto"
+    fmt = "%m-%d\n%H:%M:%S"
+    formatter = DatetimeTickFormatter(minutes = fmt, hours=fmt, days=fmt, months=fmt, years=fmt)
+    x_zoom = [BoxZoomTool(dimensions="width")]
+    tools1 = x_zoom + [BoxZoomTool(), ResetTool()]
+    tools2 = x_zoom + [BoxZoomTool(), ResetTool()]
+    
+    p = figure(height=h, width=w, x_axis_type='datetime', tools=tools1) 
+    p.xaxis.formatter= formatter
     
     battery_percent_fn = "/Users/gsteele/logs/battery_percent.dat"
     battery_percent = pd.read_csv(battery_percent_fn, delimiter=" ", header=None, names=["Timestamp", "Battery %"])
@@ -51,17 +52,12 @@ def make_dashboard():
     
     x = battery_percent["Time"]
     y = battery_percent["Battery %"]
-    l = "Battery"
-    p.line(x, y, legend_label=l)
-    p.scatter(x, y, legend_label=l, size=5)
-    p.legend.location = 'bottom_left'
+    p.line(x, y)
+    p.scatter(x, y, size=5)
+    p.yaxis.axis_label = "Battery %"
 
-    p2 = figure(height=h, width=w, x_axis_type='datetime', x_range = p.x_range) 
-    p2.sizing_mode = "scale_width"
-    fmt = "%m-%d\n%H:%M:%S"
-    formatter = DatetimeTickFormatter(hours=fmt, days=fmt, months=fmt, years=fmt)
-    p.xaxis.formatter= formatter
-    #p.add_tools(CrosshairTool())
+    p2 = figure(height=h, width=w, x_axis_type='datetime', x_range = p.x_range, tools=tools2) 
+    p2.xaxis.formatter= formatter
 
     cpu_temp_fn = "/Users/gsteele/logs/cpu_temp.dat"
     cpu_temp = pd.read_csv(cpu_temp_fn, delimiter=" ", header=None, names=["Timestamp", "Temp (C)", "units"])
@@ -70,12 +66,10 @@ def make_dashboard():
     c = "orange"
     x = cpu_temp["Time"]
     y = cpu_temp["Temp (C)"]
-    l = "Temp (C)"
-    p2.line(x, y, legend_label=l, color=c)
-    p2.scatter(x, y, legend_label=l, size=5, color=c)
-    p2.legend.location = 'bottom_left'
-    p2.xaxis.formatter= formatter
-
+    p2.line(x, y, color=c)
+    p2.scatter(x, y, size=5, color=c)
+    p2.xaxis.formatter = formatter
+    p2.yaxis.axis_label = "Temp (C)"
 
     c = column(p,p2)
     for w in p, p2, c:
