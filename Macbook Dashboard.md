@@ -99,7 +99,7 @@ def show_resources(n1=-10, n2=-1, debug = False):
         print()
         # The top 5 processes
         for j in 2,3,4,5,6:
-            ls = l[j].split() # spiit on whitespace
+            ls = l[j].split() # split on whitespace
             for ind in 2,3,9:
                 print(f"{ls[ind]:<12}", end="")
             # The process name often contains full path (not useful)
